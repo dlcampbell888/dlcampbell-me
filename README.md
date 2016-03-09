@@ -33,5 +33,4 @@ Wait for several minutes for the site to start up.
 
 ##To do
 
-* Add error handling to instance creation
 * 
