@@ -47,7 +47,7 @@ if [ "$USE_AUTOSCALE" == "true" ]
 then
 	echo "USE_AUTOSCALE is true, so creating autoscaling configuration"
 	aws autoscaling create-launch-configuration \
-		--launch-configuration-name="launch-$ELB_NAME" \
+		--launch-configuration-name="$LAUNCH_CONFIG_NAME" \
 		--image-id $DOCKER_HOST_AMI_ID \
 		--iam-instance-profile $IAM_PROFILE \
 		--key-name $KEYPAIR_NAME \
@@ -56,8 +56,8 @@ then
 		--user-data file://userdata.txt \
 		--output text
 	aws autoscaling create-auto-scaling-group \
-		--auto-scaling-group-name "asgroup-${ELB_NAME}" \
-		--launch-configuration-name "launch-${ELB_NAME}" \
+		--auto-scaling-group-name "$ASG_NAME" \
+		--launch-configuration-name "$LAUNCH_CONFIG_NAME" \
 		--min-size 1 \
 		--max-size 1 \
 		--vpc-zone-identifier $SUBNET_ID \
