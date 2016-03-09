@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#download docker
+curl -sSL https://get.docker.com/ | sh
+
+#get s3 files (using instance role)
+apt-get -y install awscli
+mkdir /opt/site
+aws s3 cp --region us-east-1 s3://dlcampbell-me-files/site.tgz /opt/site/.
+( cd /opt/site; tar -xvf site.tgz )
+
+#run docker container
+CID=$(docker run --name dlcampbell-nginx -p 80:80 -v /opt/site:/usr/share/nginx/html -d nginx)

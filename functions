@@ -1,0 +1,114 @@
+create_sg ()
+{
+  sg_id=$(aws ec2 create-security-group \
+	--vpc-id=$1 \
+	--group-name $2 \
+	--description "$3" \
+	--output text)
+  if [ "$?" != 0 ]; then 
+    echo "Couldn't create security group: $2"
+    exit 1;
+  else
+    echo $sg_id;
+  fi 
+}
+
+create_sg_cidr_ingress ()
+{
+  aws ec2 authorize-security-group-ingress \
+	--profile default \
+	--group-id $1 \
+	--protocol tcp \
+	--port $2 \
+	--cidr "$3"
+}
+
+create_sg_sg_ingress ()
+{
+  aws ec2 authorize-security-group-ingress \
+	--profile default \
+	--group-id $1 \
+	--protocol tcp \
+	--port $2 \
+	--source-group "$3"
+}
+
+create_dns_alias ()
+{
+  dns_changes=$(cat <<END_HEREDOC
+{
+  "Comment": "Adding ELB alias","Changes": 
+  [{
+    "Action": "UPSERT",
+    "ResourceRecordSet": {
+      "Name": "$2",
+      "Type": "A",
+      "AliasTarget": {
+        "HostedZoneId": "$3",
+        "DNSName": "$4",
+        "EvaluateTargetHealth": false
+      }
+    }
+  }]
+}
+END_HEREDOC
+)
+  aws route53 change-resource-record-sets \
+	--hosted-zone-id="$1" \
+	--change-batch="$dns_changes"
+}
+
+get_instance_ip () 
+{
+  instance_ip=""
+  while [ "$instance_ip" == "" ];
+  do
+    instance_ip=`aws ec2 describe-instances \
+	--query "Reservations[*].Instances[*].PublicIpAddress" \
+	--output=text \
+	--instance-ids "$1"`
+    if [ "$?" != 0 ]; then
+      echo "Couldn't get instance IP: $1"
+      exit 1;
+    fi
+    sleep 1
+  done
+  echo $instance_ip 
+}
+
+get_instance_subnet_id () 
+{
+  subnet_id=""
+  while [ "$subnet_id" == "" ];
+  do
+    subnet_id=`aws ec2 describe-instances \
+	--query "Reservations[*].Instances[*].SubnetId" \
+	--output=text \
+	--instance-ids "$1"`
+    if [ "$?" != 0 ]; then
+      echo "Couldn't get instance subnet ID: $1"
+      exit 1;
+    fi
+  done
+  echo $subnet_id 
+}
+
+
+
+wait_for_url ()
+{
+  echo -n "Waiting for $1 to be up.."
+  test=1
+  while [ $test != 0 ];
+  do
+    curl "$1" -s -f -o /dev/null;
+    test=$?
+    if [ $test != 0 ]; 
+    then 
+      sleep 3; 
+      echo -n "."; 
+    fi  
+  done
+  echo "up."
+}
+
