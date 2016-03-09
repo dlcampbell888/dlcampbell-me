@@ -3,14 +3,15 @@ http://dlcampbell.me
 
 ##Prerequistes
 
-* awscli set up and running 
-** Default profile in ~/.aws/config
-** Access key in the profile with Administrator rights
-* AWS resources are available
-** VPC and public subnet created
-** EC2 key pair called "docker" created and docker.pem available on PATH_TO_DOCKER_KEY
-** IAM role for the host instance with S3 access created
-** Route53 hosted zone created with your domain name
+###awscli set up and running 
+* Default profile in ~/.aws/config
+* Access key in the profile with Administrator rights
+
+###AWS resources are available
+* VPC and public subnet created
+* EC2 key pair called "docker" created and docker.pem available on PATH_TO_DOCKER_KEY
+* IAM role for the host instance with S3 access created
+* Route53 hosted zone created with your domain name
 
 ##Deploying
 
